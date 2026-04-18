@@ -2,7 +2,13 @@ name: AI4Trade Auto Scraper
 
 on:
   schedule:
-    - cron: '0 1,5,9,13,17,21 * * *'
+    # 10:50 UTC = 17:50 WIB
+    # 14:50 UTC = 21:50 WIB
+    # 18:50 UTC = 01:50 WIB (Besok)
+    # 22:50 UTC = 05:50 WIB (Besok)
+    # 02:50 UTC = 09:50 WIB (Besok)
+    # 06:50 UTC = 13:50 WIB (Besok)
+    - cron: '50 2,6,10,14,18,22 * * *'
   workflow_dispatch:
 
 jobs:

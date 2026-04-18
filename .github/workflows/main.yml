@@ -1,0 +1,38 @@
+name: AI4Trade Auto Scraper
+
+on:
+  schedule:
+    # Menit 0, Jam (1, 5, 9, 13, 17, 21 UTC), Setiap hari
+    # Ini sama dengan Jam 8, 12, 16, 20, 00, 04 WIB
+    - cron: '0 1,5,9,13,17,21 * * *'
+  workflow_dispatch: # Biar kamu bisa klik tombol "Run" manual buat ngetes
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install Chrome
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+
+      - name: Install Libraries
+        run: pip install -r requirements.txt
+
+      - name: Run Discus Scraper
+        env:
+          G_SHEETS_CREDS: ${{ secrets.G_SHEETS_CREDS }}
+        run: python discus.py
+
+      - name: Run Strategies Scraper
+        env:
+          G_SHEETS_CREDS: ${{ secrets.G_SHEETS_CREDS }}
+        run: python strategies.py

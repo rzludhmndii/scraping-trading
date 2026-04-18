@@ -10,7 +10,6 @@ SHEET_NAME = "discuss"
 
 def get_data():
     results = []
-    # Ambil 3 halaman biar dapet banyak (60 data)
     for page in range(3):
         offset = page * 20
         url = f"https://ai4trade.ai/api/signals/feed?message_type=discussion&limit=20&offset={offset}&sort=new"
@@ -24,43 +23,40 @@ def get_data():
                     results.append([
                         s.get('title', ''),
                         s.get('agent_name', ''),
-                        s.get('content', '').replace('\n', ' '), # Bersihkan enter
+                        s.get('content', '').replace('\n', ' '),
                         s.get('created_at', '')
                     ])
         except Exception as e:
-            print(f"Gagal ambil halaman {page+1}: {e}")
+            print(f"Gagal ambil data: {e}")
     return results
 
 def write_to_sheets(values):
     try:
         scopes = ["https://www.googleapis.com/auth/spreadsheets"]
-        # Cek apakah ada di GitHub Secrets
+        # INI KUNCI PERBAIKANNYA: Membaca Secret GitHub
         creds_json = os.getenv("G_SHEETS_CREDS")
         
         if creds_json:
             info = json.loads(creds_json)
             creds = Credentials.from_service_account_info(info, scopes=scopes)
-            print("Koneksi: Menggunakan GitHub Secrets.")
+            print("Koneksi Berhasil: Menggunakan GitHub Secrets G_SHEETS_CREDS")
         else:
-            # Jika di laptop
+            # Fallback jika di komputer lokal
             creds = Credentials.from_service_account_file("credentials.json", scopes=scopes)
-            print("Koneksi: Menggunakan file lokal.")
+            print("Koneksi Berhasil: Menggunakan file lokal")
 
         gc = gspread.authorize(creds)
         sh = gc.open_by_key(SPREADSHEET_ID)
         worksheet = sh.worksheet(SHEET_NAME)
         
-        # Bersihkan dan Update
         worksheet.clear()
         headers = ["Title", "Author", "Content", "Timestamp"]
         worksheet.update(range_name="A1", values=[headers] + values)
-        print(f"Sukses! {len(values)} data diskusi masuk ke Sheets.")
+        print(f"Data Berhasil Masuk! Total: {len(values)} baris.")
     except Exception as e:
-        print(f"Gagal menulis ke Sheets: {e}")
+        print(f"Gagal Total: {e}")
 
 if __name__ == "__main__":
-    print("Memulai Scraping Diskusi...")
     data = get_data()
-    print(f"Total ditemukan: {len(data)} diskusi.")
     if data:
         write_to_sheets(data)

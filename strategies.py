@@ -10,7 +10,6 @@ SHEET_NAME = "strategies"
 
 def get_data():
     results = []
-    # Ambil data strategi
     url = "https://ai4trade.ai/api/signals/feed?message_type=strategy&limit=40&offset=0&sort=new"
     try:
         headers = {'User-Agent': 'Mozilla/5.0'}
@@ -26,7 +25,7 @@ def get_data():
                     s.get('created_at', s.get('timestamp', ''))
                 ])
     except Exception as e:
-        print(f"Gagal ambil strategi: {e}")
+        print(f"Gagal ambil data: {e}")
     return results
 
 def write_to_sheets(values):
@@ -37,6 +36,7 @@ def write_to_sheets(values):
         if creds_json:
             info = json.loads(creds_json)
             creds = Credentials.from_service_account_info(info, scopes=scopes)
+            print("Koneksi Berhasil: Menggunakan GitHub Secrets G_SHEETS_CREDS")
         else:
             creds = Credentials.from_service_account_file("credentials.json", scopes=scopes)
 
@@ -47,13 +47,11 @@ def write_to_sheets(values):
         worksheet.clear()
         headers = ["Title", "Author", "Content", "Timestamp"]
         worksheet.update(range_name="A1", values=[headers] + values)
-        print(f"Sukses! {len(values)} data strategi masuk ke Sheets.")
+        print(f"Data Berhasil Masuk! Total: {len(values)} baris.")
     except Exception as e:
-        print(f"Gagal menulis ke Sheets: {e}")
+        print(f"Gagal Total: {e}")
 
 if __name__ == "__main__":
-    print("Memulai Scraping Strategi...")
     data = get_data()
-    print(f"Total ditemukan: {len(data)} strategi.")
     if data:
         write_to_sheets(data)
